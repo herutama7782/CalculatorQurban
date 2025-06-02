@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kalkulator Daging Sapi Qurban</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Custom styles for Inter font */
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Custom styles for button gradient and shadow */
+        .btn-primary {
+            background-image: linear-gradient(to right, #3B82F6 0%, #2563EB 100%); /* Blue gradient */
+            box-shadow: 0 4px 15px 0 rgba(40, 116, 252, 0.75);
+        }
+        .btn-primary:hover {
+            background-image: linear-gradient(to right, #2563EB 0%, #1D4ED8 100%);
+            box-shadow: 0 4px 15px 0 rgba(29, 78, 216, 0.9);
+        }
+        .btn-secondary {
+            background-image: linear-gradient(to right, #6B7280 0%, #4B5563 100%); /* Gray gradient */
+            box-shadow: 0 4px 15px 0 rgba(107, 114, 128, 0.75);
+        }
+        .btn-secondary:hover {
+            background-image: linear-gradient(to right, #4B5563 0%, #374151 100%);
+            box-shadow: 0 4px 15px 0 rgba(55, 65, 81, 0.9);
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-green-50 text-gray-800 leading-relaxed p-4 md:p-8">
+    <div class="container bg-white p-6 md:p-8 rounded-3xl shadow-2xl max-w-2xl mx-auto my-8 border border-gray-100 transform transition-all duration-300 hover:scale-[1.01]">
+        <img src="https://i.imgur.com/lQ89khV.png" alt="Header Qurban" class="w-full h-auto rounded-2xl mb-8 shadow-lg">
+
+        <div class="form-group mb-6">
+            <label for="jenisSapi" class="block text-gray-700 font-semibold mb-2 text-lg">Pilih Jenis Hewan Qurban (untuk referensi persentase):</label>
+            <select id="jenisSapi" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-4 focus:ring-blue-300 transition duration-200 text-base shadow-sm">
+                </select>
+        </div>
+
+        <div class="form-group mb-4">
+            <label for="beratHidup" class="block text-gray-700 font-semibold mb-2 text-lg">Berat Hidup Hewan (kg) Jika lebih dari 1 ambil rata2:</label>
+            <input type="number" id="beratHidup" value="0" min="0" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-4 focus:ring-blue-300 transition duration-200 text-base shadow-sm">
+        </div>
+
+        <div class="form-group mb-4">
+            <label for="persenKarkas" class="block text-gray-700 font-semibold mb-2 text-lg">Persentase Karkas (%):</label>
+            <input type="number" id="persenKarkas" value="0" min="0" max="100" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-4 focus:ring-blue-300 transition duration-200 text-base shadow-sm">
+        </div>
+
+        <div class="form-group mb-4">
+            <label for="persenBoneless" class="block text-gray-700 font-semibold mb-2 text-lg">Persentase Daging Tanpa Tulang dari Karkas/Boneless Rata2 (%):</label>
+            <input type="number" id="persenBoneless" value="0" min="0" max="100" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-4 focus:ring-blue-300 transition duration-200 text-base shadow-sm">
+        </div>
+
+        <div class="form-group mb-4">
+            <label for="jumlahSapi" class="block text-gray-700 font-semibold mb-2 text-lg">Jumlah Hewan Qurban:</label>
+            <input type="number" id="jumlahSapi" value="0" min="0" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-4 focus:ring-blue-300 transition duration-200 text-base shadow-sm">
+        </div>
+
+        <div class="form-group mb-8">
+            <label for="jumlahKantong" class="block text-gray-700 font-semibold mb-2 text-lg">Jumlah Kantong yang Diinginkan:</label>
+            <input type="number" id="jumlahKantong" value="0" min="0" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-4 focus:ring-blue-300 transition duration-200 text-base shadow-sm">
+        </div>
+
+        <div class="flex flex-col sm:flex-row gap-4">
+            <button onclick="hitungDaging()" class="flex-1 text-white font-bold py-3 px-4 rounded-lg text-xl transition duration-300 ease-in-out btn-primary">
+                Hitung Daging
+            </button>
+            <button onclick="resetInputs()" class="flex-1 text-white font-bold py-3 px-4 rounded-lg text-xl transition duration-300 ease-in-out btn-secondary">
+                Reset Input
+            </button>
+        </div>
+
+        <div id="result" class="mt-10 p-6 bg-blue-100 border border-blue-200 rounded-xl text-lg shadow-inner">
+            <p class="text-gray-600">Hasil perhitungan akan muncul di sini.</p>
+        </div>
+    </div>
+
+    <script>
+        // Data for different cattle types and their carcass/boneless percentages
+        const cattleData = {
+            "Sapi Bali": { karkas: "50-55", boneless: "65-70", defaultKarkas: 52.5, defaultBoneless: 67.5 },
+            "Sapi Madura": { karkas: "45-50", boneless: "60-65", defaultKarkas: 47.5, defaultBoneless: 62.5 },
+            "Kerbau Lokal": { karkas: "45-50", boneless: "60-65", defaultKarkas: 47.5, defaultBoneless: 62.5 },
+            "Sapi Simmental": { karkas: "55-62", boneless: "70-75", defaultKarkas: 58.5, defaultBoneless: 72.5 },
+            "Sapi Limousin": { karkas: "55-60", boneless: "70-75", defaultKarkas: 57.5, defaultBoneless: 72.5 },
+            "Kambing Lokal": { karkas: "45-50", boneless: "60-65", defaultKarkas: 47.5, defaultBoneless: 62.5 },
+            "Domba Lokal": { karkas: "50-55", boneless: "65-70", defaultKarkas: 52.5, defaultBoneless: 67.5 }
+        };
+
+        /**
+         * Populates the 'Jenis Sapi' dropdown with options from cattleData.
+         * Sets data attributes for carcass and boneless percentages on each option.
+         */
+        function populateCattleDropdown() {
+            const jenisSapiSelect = document.getElementById('jenisSapi');
+            // Clear existing options before populating
+            jenisSapiSelect.innerHTML = '';
+            for (const type in cattleData) {
+                const option = document.createElement('option');
+                option.value = type;
+                option.textContent = `${type} (Karkas: ${cattleData[type].karkas}%, Boneless: ${cattleData[type].boneless}%)`;
+                option.setAttribute('data-karkas', cattleData[type].defaultKarkas);
+                option.setAttribute('data-boneless', cattleData[type].defaultBoneless);
+                jenisSapiSelect.appendChild(option);
+            }
+        }
+
+        /**
+         * Updates the 'Persentase Karkas' and 'Persentase Boneless' input fields
+         * based on the currently selected option in the 'Jenis Sapi' dropdown.
+         * Then triggers the main calculation.
+         */
+        function updatePercentagesFromDropdown() {
+            const jenisSapiSelect = document.getElementById('jenisSapi');
+            const selectedOption = jenisSapiSelect.options[jenisSapiSelect.selectedIndex];
+
+            if (selectedOption) {
+                document.getElementById('persenKarkas').value = selectedOption.getAttribute('data-karkas');
+                document.getElementById('persenBoneless').value = selectedOption.getAttribute('data-boneless');
+            }
+            hitungDaging(); // Recalculate after updating percentages
+        }
+
+        /**
+         * Resets all input fields to their default values and triggers a recalculation.
+         */
+        function resetInputs() {
+            // Reset numerical input fields to their default values
+            document.getElementById('beratHidup').value = 0;
+            document.getElementById('jumlahSapi').value = 0;
+            document.getElementById('jumlahKantong').value = 0;
+
+            // Reset dropdown to the first option (Sapi Bali) and update percentages
+            const jenisSapiSelect = document.getElementById('jenisSapi');
+            if (jenisSapiSelect.options.length > 0) {
+                jenisSapiSelect.selectedIndex = 0; // Select the first option
+            }
+            updatePercentagesFromDropdown(); // This will also call hitungDaging()
+        }
+
+        /**
+         * Calculates the amount of boneless meat and meat per bag based on user inputs.
+         * Displays the results in the 'result' div.
+         */
+        function hitungDaging() {
+            // Get input values, defaulting to specified values if empty or invalid
+            // Use 0 as a fallback if the input is truly empty or invalid, but then
+            // use a meaningful default for calculations if the parsed value is 0
+            // to prevent division by zero or other mathematical errors.
+            const beratHidup = parseFloat(document.getElementById('beratHidup').value) || 0;
+            const persenKarkas = parseFloat(document.getElementById('persenKarkas').value) || 0;
+            const persenBoneless = parseFloat(document.getElementById('persenBoneless').value) || 0;
+            const jumlahSapi = parseFloat(document.getElementById('jumlahSapi').value) || 0;
+            const jumlahKantong = parseFloat(document.getElementById('jumlahKantong').value) || 0;
+
+            // Ensure non-zero values for calculation where division is involved
+            const actualBeratHidup = beratHidup > 0 ? beratHidup : 0; // Default for calculation if input is 0
+            const actualPersenKarkas = persenKarkas > 0 ? persenKarkas : 0; // Default for calculation if input is 0
+            const actualPersenBoneless = persenBoneless > 0 ? persenBoneless : 0; // Default for calculation if input is 0
+            const actualJumlahSapi = jumlahSapi > 0 ? jumlahSapi : 0; // Default for calculation if input is 0
+            const actualJumlahKantong = jumlahKantong > 0 ? jumlahKantong : 0; // Default for calculation if input is 0
+
+            // Perform calculations
+            // Calculate carcass weight per cow
+            const beratKarkasPerSapi = (actualPersenKarkas / 100) * actualBeratHidup;
+            // Calculate boneless meat weight per cow from carcass weight
+            const beratBonelessPerSapi = (actualPersenBoneless / 100) * beratKarkasPerSapi;
+            // Calculate total boneless meat from all cows
+            const totalBonelessMeat = beratBonelessPerSapi * actualJumlahSapi;
+            // Calculate meat weight per bag, handle division by zero for display
+            const beratPerKantong = actualJumlahKantong > 0 ? totalBonelessMeat / actualJumlahKantong : 0;
+
+
+            // Get the result display div
+            const resultDiv = document.getElementById('result');
+
+            // Update the result div with the calculated values
+            resultDiv.innerHTML = `
+                <h3 class="text-2xl font-bold text-blue-700 mb-4">Hasil Perhitungan:</h3>
+                <p class="mb-2 text-gray-700">Berat Karkas per Hewan: <strong class="text-red-600">${beratKarkasPerSapi.toFixed(2)} kg</strong></p>
+                <p class="mb-2 text-gray-700">Berat Daging Tanpa Tulang per Hewan: <strong class="text-red-600">${beratBonelessPerSapi.toFixed(2)} kg</strong></p>
+                <p class="mb-2 text-gray-700">Total Daging Tanpa Tulang dari ${actualJumlahSapi} Hewan: <strong class="text-red-600">${totalBonelessMeat.toFixed(2)} kg</strong></p>
+                <p class="mb-2 text-gray-700">Berat Daging per Kantong (${actualJumlahKantong} kantong): Sekitar <strong class="text-red-600">${beratPerKantong.toFixed(3)} kg</strong> per kantong</p>
+                <p class="text-sm text-gray-500 mt-4">Note: Tulang/Jeroan digunakan untuk melengkapi pembagian perkantong</p>
+            `;
+        }
+
+        // Run functions automatically when the page is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            populateCattleDropdown(); // Populate dropdown first
+            resetInputs(); // Call resetInputs to set initial values and trigger calculation
+            // Add event listener for dropdown changes
+            document.getElementById('jenisSapi').addEventListener('change', updatePercentagesFromDropdown);
+        });
+    </script>
+</body>
+</html>
